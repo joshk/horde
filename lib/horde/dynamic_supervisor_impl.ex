@@ -693,11 +693,15 @@ defmodule Horde.DynamicSupervisorImpl do
         # will cast `{:relinquish_child_process, child_id}`
         # to this process for cleanup.
 
-        Horde.ProcessesSupervisor.send_exit_signal(
-          supervisor_name(state.name),
-          child_pid,
-          {:shutdown, :process_redistribution}
-        )
+        try do
+          Horde.ProcessesSupervisor.send_exit_signal(
+            supervisor_name(state.name),
+            child_pid,
+            {:shutdown, :process_redistribution}
+          )
+        catch
+          :exit, _ -> :ok
+        end
 
         Map.put(state, :local_process_count, state.local_process_count - 1)
 
